@@ -158,11 +158,9 @@ class Amplitude
 
             return $this;
         }
-
+        $this->sendQueue();
 
        return $this->resetQueue();
-
-        return $this->resetEvent();
     }
 
     /**
