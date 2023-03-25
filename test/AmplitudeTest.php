@@ -30,7 +30,9 @@ class AmplitudeTest extends TestCase
     public function testInit()
     {
         $amplitude = new Amplitude();
-        $this->assertNull($amplitude->getApiKey(), 'Initial value should be null');
+        $this->assertNull($amplitude->getUserId(), 'Initial value should be null');
+        $this->assertNotNull($amplitude->getApiKey(), 'Initial value should not be null');
+        $this->assertEquals(Amplitude::AMPLITUDE_API_URL, $amplitude->getApiKey());
         $amplitude->init('API-KEY', 'USER-ID');
         $this->assertEquals('API-KEY', $amplitude->getApiKey(), 'Init should set api key');
         $this->assertEquals('USER-ID', $amplitude->getUserId(), 'Init should set user ID');
