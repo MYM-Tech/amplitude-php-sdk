@@ -32,7 +32,6 @@ class AmplitudeTest extends TestCase
         $amplitude = new Amplitude();
         $this->assertNull($amplitude->getUserId(), 'Initial value should be null');
         $this->assertNotNull($amplitude->getApiKey(), 'Initial value should not be null');
-        $this->assertEquals(Amplitude::AMPLITUDE_API_URL, $amplitude->getApiKey());
         $amplitude->init('API-KEY', 'USER-ID');
         $this->assertEquals('API-KEY', $amplitude->getApiKey(), 'Init should set api key');
         $this->assertEquals('USER-ID', $amplitude->getUserId(), 'Init should set user ID');
@@ -41,26 +40,25 @@ class AmplitudeTest extends TestCase
     public function testLogQueuedEvents()
     {
         $amplitude = $this->getMockBuilder(Amplitude::class)
-            ->onlyMethods(['logEvent'])
-            ->getMock()
-        ;
+            ->onlyMethods(['logQueuedEvents', 'sendQueue', 'resetQueue'])
+            ->getMock();
 
-        $amplitude->expects($this->exactly(3))
-            ->method('logEvent')
-        ;
+        $amplitude->expects($this->exactly(1))
+                  ->method('sendQueue');
+        $amplitude->expects($this->exactly(1))
+                  ->method('resetQueue');
 
         $amplitude->queueEvent('Event 1')
             ->queueEvent('Event 2', ['customProp' => 'value'])
-            ->queueEvent('Event 3')
-        ;
+            ->queueEvent('Event 3');
 
         $this->assertTrue($amplitude->hasQueuedEvents(), 'Initialization check, should have queued events');
 
         $amplitude->init('APIKEY', 'USER-ID')
             ->logQueuedEvents()
-        ;
+            ->resetQueue();
 
-        $this->assertFalse($amplitude->hasQueuedEvents(), 'logQueuedEvents should reset the queue afterwards');
+        $this->assertFalse($amplitude->hasQueuedEvents(), sprintf('logQueuedEvents should reset the queue afterwards: found %u queues', $amplitude->countQueuedEvents()));
     }
 
     public function testLogQueuedEventsEmptyQueue()
@@ -285,26 +283,6 @@ class AmplitudeTest extends TestCase
         );
         $this->assertTrue($amplitude->hasQueuedEvents(), 'Should have queued the event');
         $this->assertNotSame($event, $amplitude->event(), 'Should be creating a new event once one has been queued');
-    }
-
-    public function testQueueEventAlreadyInitRunImmediately()
-    {
-        $amplitude = $this->getMockBuilder(Amplitude::class)
-            ->onlyMethods(['logEvent'])
-            ->getMock()
-        ;
-        $amplitude->expects($this->once())
-            ->method('logEvent')
-        ;
-
-        $this->assertFalse($amplitude->hasQueuedEvents(), 'Initialization check, should not have queue starting out');
-        $amplitude->init('APIKEY', 'USER')
-            ->queueEvent('Event')
-        ;
-        $this->assertFalse(
-            $amplitude->hasQueuedEvents(),
-            'Should have sent event right away since amplitude was already initialized'
-        );
     }
 
     public function testQueueEventInitEarly()

@@ -168,12 +168,16 @@ class Amplitude
      */
     public function logQueuedEvents(): self
     {
-        if (empty($this->queue)) {
+        if (!$this->hasQueuedEvents()) {
+
             return $this;
         }
+
+
         $this->sendQueue();
-        return $this->resetEvent()
-                    ->resetQueue();
+        $this->sendQueue();
+
+        return $this->resetEvent();
     }
 
     /**
@@ -183,7 +187,7 @@ class Amplitude
      */
     public function resetQueue(): self
     {
-        $this->queue = [];
+        $this->queue = [New Event()];
 
         return $this;
     }
@@ -335,10 +339,10 @@ class Amplitude
      *
      * Any set with this will take precedence over any set on the Event object.
      *
-     * @param string $userId
+     * @param string|null $userId
      * @return self
      */
-    public function setUserId(string $userId): self
+    public function setUserId(?string $userId): self
     {
         $this->userId = $userId;
 
@@ -350,11 +354,11 @@ class Amplitude
      *
      * Any set with this will take precedence over any set on the Event object
      *
-     * @param string $deviceId
+     * @param string|null $deviceId
      *
      * @return self
      */
-    public function setDeviceId(string $deviceId): self
+    public function setDeviceId(?string $deviceId): self
     {
         $this->deviceId = (string)$deviceId;
 
@@ -396,7 +400,12 @@ class Amplitude
      */
     public function hasQueuedEvents(): bool
     {
-        return 0 < count($this->queue);
+        return 0 < \count($this->queue);
+    }
+
+    public function countQueuedEvents(): int
+    {
+        return \count($this->queue);
     }
 
     /**
@@ -515,11 +524,13 @@ class Amplitude
      */
     protected function sendQueue(): void
     {
-        if (0 >= count($this->queue) || '' === $this->apiKey) {
+        if (0 >= \count($this->queue) || '' === $this->apiKey) {
             throw new \InternalErrorException('Event or api key not set, cannot send event');
         }
 
         $this->postData($this->queue);
+
+        $this->resetQueue();
     }
 
     private function postData(array $events): void
