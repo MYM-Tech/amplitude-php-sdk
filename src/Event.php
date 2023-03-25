@@ -1,5 +1,5 @@
 <?php
-namespace MYM\Amplitude;
+namespace Zumba\Amplitude;
 
 /**
  * Event object, used to make a consistent interface and serialization of the event JSON used in Amplitude API calls

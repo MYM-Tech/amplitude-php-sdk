@@ -1,5 +1,5 @@
 <?php
-namespace MYM\Amplitude;
+namespace Zumba\Amplitude;
 
 class Inflector
 {
