@@ -21,7 +21,7 @@ class EventTest extends TestCase
         $this->assertEquals(json_encode($expected), json_encode($event), $msg);
     }
 
-    public function setDataProvider()
+    public static function setDataProvider(): array
     {
         return [
             [
@@ -69,11 +69,11 @@ class EventTest extends TestCase
         ];
     }
 
-    public function testSetArray()
+    public function testSetProperties()
     {
         $event = new Event();
 
-        $event->set(
+        $event->setProperties(
             [
                 'deviceId' => 'device',
                 'user_id' => 'user',
@@ -116,7 +116,7 @@ class EventTest extends TestCase
         $this->assertEquals($expected, $event->get($getName), $msg);
     }
 
-    public function getDataProvider()
+    public static function getDataProvider(): array
     {
         return [
             [

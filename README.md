@@ -1,11 +1,13 @@
 # Zumba amplitude-php
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-![Build Status](https://github.com/zumba/amplitude-php/workflows/Amplitude%20PHP%20CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/zumba/amplitude-php/badge.svg?branch=master)](https://coveralls.io/github/zumba/amplitude-php?branch=master)
-[![Scrutinizer](https://scrutinizer-ci.com/g/zumba/amplitude-php/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/zumba/amplitude-php/)
+![Build Status](https://github.com/MYM-Tech/amplitude-sdk/workflows/Amplitude%20PHP%20CI/badge.svg)
 
-This is a moderately thin PHP API for [Amplitude](https://amplitude.com/), powerful enough to do what you need without getting in the way.  Designed to work well in 2 main scenarios:
+[//]: # ([![Coverage Status]&#40;https://coveralls.io/repos/github/zumba/amplitude-php/badge.svg?branch=master&#41;]&#40;https://coveralls.io/github/zumba/amplitude-php?branch=master&#41;)
+
+[//]: # ([![Scrutinizer]&#40;https://scrutinizer-ci.com/g/zumba/amplitude-php/badges/quality-score.png?b=master&#41;]&#40;https://scrutinizer-ci.com/g/zumba/amplitude-php/&#41;)
+
+This is a moderately thin PHP API for [Amplitude](https://amplitude.com/), forked from [Zumba/Amplitude-php](https://github.com/zumba/amplitude-php) and adapted.
 
 * **Multiple Events using Same User & Amplitude App** - When you are tracking possibly multiple events, all for the same user, all for the same Amplitude app.  This library provides a Singleton instance that allows initializing the API key and user info once for the page load, that gets used for any events logged during that page load.
 * **Multiple Events across Multiple Users and possibly multiple Amplitude Apps** - For times you may need to log multiple events for a lot of different users, possibly using different amplitude apps.
