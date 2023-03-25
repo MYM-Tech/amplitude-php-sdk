@@ -1,9 +1,9 @@
 <?php
 
-namespace Zumba\Amplitude\Test;
+namespace MYM\Amplitude\Test;
 
 use PHPUnit\Framework\TestCase;
-use \Zumba\Amplitude\Inflector;
+use \MYM\Amplitude\Inflector;
 
 /**
  * @group amplitude

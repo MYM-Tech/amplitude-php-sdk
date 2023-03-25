@@ -1,10 +1,10 @@
 <?php
-namespace Zumba\Amplitude;
+namespace MYM\Amplitude;
 
 /**
  * Event object, used to make a consistent interface and serialization of the event JSON used in Amplitude API calls
  *
- * To maintain better parity with the official Amplitude HTTP API, can set the built in properties using underscored
+ * To maintain better parity with the official Amplitude HTTP API, can set the built-in properties using underscored
  * name (e.g. user_id instead of userId), though camelcase is recommended for better looking code.
  *
  * @property string $userId
@@ -45,7 +45,7 @@ class Event implements \JsonSerializable
      *
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * Array of built-in properties used for events, and the data type for each one.
@@ -55,7 +55,7 @@ class Event implements \JsonSerializable
      *
      * @var array
      */
-    protected $availableVars = [
+    protected array $availableVars = [
         'user_id' => 'string',
         'device_id' => 'string',
         'event_type' => 'string',
@@ -97,7 +97,7 @@ class Event implements \JsonSerializable
     public function __construct(array $data = [])
     {
         if (!empty($data)) {
-            $this->set($data);
+            $this->setProperties($data);
         }
     }
 
@@ -105,8 +105,10 @@ class Event implements \JsonSerializable
      * Set the user properties on the event
      *
      * @param array $userProperties
+     *
+     * @return self
      */
-    public function setUserProperties(array $userProperties)
+    public function setUserProperties(array $userProperties): self
     {
         $props = $this->userProperties ?: [];
         $this->userProperties = array_merge($props, $userProperties);
@@ -120,7 +122,7 @@ class Event implements \JsonSerializable
      * case version like userId, deviceId etc. - it will set the built-in property, casting the value to the
      * appropriate type for that property
      *
-     * If the name does not match either underscore or camcelcase version of a built in event property name, it will
+     * If the name does not match either underscore or camelCase version of a built-in event property name, it will
      * set the value in the event_properties array.
      *
      * It also accepts an array of key => value pairs for the first argument, to pass in an array of properties to set.
@@ -129,55 +131,68 @@ class Event implements \JsonSerializable
      * set in event_properties are not normalized.  Meaning if you use a camelcase name, name with spaces in it, etc,
      * it will use that name as-is without attempting to normalize.
      *
-     * @param string|array $name If array, will set key:value pairs
-     * @param string $value Not used if first argument is an array
-     * @return \Zumba\Amplitude\Event
+     * @param string $name If is array, will set key:value pairs
+     * @param mixed $value
+     *
+     * @return self
      */
-    public function set($name, $value = null)
+    public function set(string $name, $value): self
     {
-        if (is_array($name)) {
-            foreach ($name as $key => $val) {
-                $this->set($key, $val);
-            }
-            return $this;
-        }
         $name = $this->normalize($name);
         if (!isset($this->availableVars[$name])) {
             // treat it like an event_property
             $this->data['event_properties'][$name] = $value;
+
             return $this;
         }
 
         switch ($this->availableVars[$name]) {
-            case 'string':
-                $value = (string)$value;
-                break;
             case 'int':
-                $value = (int)$value;
+                $value = (int) $value;
                 break;
             case 'float':
-                $value = (float)$value;
+                $value = (float) $value;
                 break;
             case 'array':
-                $value = (array)$value;
+                $value = (array) $value;
+                break;
+            default:
+                $value = (string) $value;
                 break;
         }
         $this->data[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param array $properties
+     * @see set()
+     *
+     * @return self
+     */
+    public function setProperties(array $properties): self
+    {
+        foreach ($properties as $key => $val) {
+            $this->set($key, $val);
+        }
+
         return $this;
     }
 
     /**
      * Gets the event property, either from built-in event properties or the custom properties from event_properties.
      *
-     * As with the set() method, for built-in event properties, can use camelcase OR underscore and either one will
-     * work.  This is not the case for custom event properties however.
+     * Method is case-sensitive for custom properties. Built-in event properties can use camelcase OR underscore, either
+     * one will work.
      *
      * If no value found, returns null.
      *
      * @param string $name
-     * @return mixed
+     *
+     * @return mixed|null
      */
-    public function get($name)
+    public function get(string $name)
     {
         $name = $this->normalize($name);
         if (isset($this->data[$name])) {
@@ -185,19 +200,21 @@ class Event implements \JsonSerializable
         } elseif (isset($this->data['event_properties'][$name])) {
             return $this->data['event_properties'][$name];
         }
+
         return null;
     }
 
     /**
      * Unset event property, either from built-in event properties or the custom properties from event_properties.
      *
-     * As with the set() method, for built-in event properties, can use camelcase OR underscore and either one will
-     * work.  This is not the case for custom event properties however.
+     * Method is case-sensitive for custom properties. Built-in event properties can use camelcase OR underscore, either
+     * one will work.
      *
      * @param string $name
-     * @return \Zumba\Amplitude\Event
+     *
+     * @return self
      */
-    public function unsetProperty($name)
+    public function unsetProperty(string $name): self
     {
         $name = $this->normalize($name);
         if (isset($this->availableVars[$name])) {
@@ -205,34 +222,38 @@ class Event implements \JsonSerializable
         } elseif (isset($this->data['event_properties'])) {
             unset($this->data['event_properties'][$name]);
         }
+
         return $this;
     }
 
     /**
      * Check if event property is set, either from built-in event properties or custom properties from event_properties
      *
-     * As with the set() method, for built-in event properties, can use camelcase OR underscore and either one will
-     * work.  This is not the case for custom event properties however.
+     * Method is case-sensitive for custom properties. Built-in event properties can use camelcase OR underscore, either
+     * one will work.
      *
      * @param string $name
-     * @return \Zumba\Amplitude\Event
+     *
+     * @return boolean
      */
-    public function isPropertySet($name)
+    public function isPropertySet(string $name): bool
     {
         $name = $this->normalize($name);
+
         return isset($this->data[$name]) || isset($this->data['event_properties'][$name]);
     }
 
     /**
      * Magic method to set the value.
      *
-     * See the set() method.
+     * @see set()
      *
      * @param string $name
-     * @param string $value
+     * @param mixed $value
+     *
      * @return void
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value): void
     {
         $this->set($name, $value);
     }
@@ -240,12 +261,13 @@ class Event implements \JsonSerializable
     /**
      * Magic method to get the value
      *
-     * See the get() method
+     * @see get()
      *
      * @param string $name
+     *
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         return $this->get($name);
     }
@@ -257,7 +279,7 @@ class Event implements \JsonSerializable
      *
      * @param string $name
      */
-    public function __unset($name)
+    public function __unset(string $name)
     {
         $this->unsetProperty($name);
     }
@@ -266,12 +288,12 @@ class Event implements \JsonSerializable
      * Magic method to see if name is set
      *
      * Uses same normalization on the name as the set method, where it will match built-in properties for either
-     * camelcased or underscore version of property
+     * camelcase or snake_case version of property
      *
      * @param string $name
      * @return boolean
      */
-    public function __isset($name)
+    public function __isset(string $name)
     {
         return $this->isPropertySet($name);
     }
@@ -279,19 +301,20 @@ class Event implements \JsonSerializable
     /**
      * Normalized the name, by attempting to camelcase / underscore it to see if it matches any built-in property names.
      *
-     * If it matches a built-in property name, will return the normalized property name.  Otherwise returns the name
-     * un-modified.
+     * If it matches a built-in property name, will return the normalized property name. Returns the name
+     * un-modified otherwise.
      *
      * @param string $name
+     *
      * @return string
      */
-    protected function normalize($name)
+    protected function normalize(string $name): string
     {
         if (isset($this->availableVars[$name])) {
             return $name;
         }
         if (preg_match('/^[a-zA-Z_]+$/', $name)) {
-            // No spaces or unexpected vars, this could be camelcased version or underscore version of a built-in
+            // No spaces or unexpected vars, this could be camelCased version or underscore version of a built-in
             // var name, check to see if it matches
             $underscore = Inflector::underscore($name);
             if (isset($this->availableVars[$underscore])) {
@@ -312,7 +335,7 @@ class Event implements \JsonSerializable
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->data;
     }

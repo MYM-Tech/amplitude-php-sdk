@@ -1,18 +1,18 @@
 {
-    "name": "zumba/amplitude-php",
+    "name": "mym/amplitude-sdk",
     "description": "PHP SDK for Amplitude",
     "keywords": ["amplitude", "sdk", "analytics", "tracking"],
-    "homepage": "https://github.com/zumba/amplitude-php",
+    "homepage": "https://github.com/mym/amplitude-sdk",
     "license": "MIT",
     "authors": [
         {
-            "name": "Zumba Fitness, LLC",
-            "homepage": "https://tech.zumba.com"
+            "name": "Air Medias - MYM",
+            "homepage": "https://mym.fans"
         },
         {
-            "name": "Jonathan Foote",
-            "email": "jonathan.foote@zumba.com",
-            "role": "Developer"
+            "name": "Roussas Steven",
+            "email": "steven@mym.fans",
+            "role": "Head of Web engineering"
         }
     ],
     "require": {
@@ -28,8 +28,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Zumba\\Amplitude\\": "./src/",
-            "Zumba\\Amplitude\\Test\\": "./test/"
+            "MYM\\Amplitude\\": "./src/",
+            "MYM\\Amplitude\\Test\\": "./test/"
         }
     }
 }

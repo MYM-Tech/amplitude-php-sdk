@@ -1,9 +1,9 @@
 <?php
 
-namespace Zumba\Amplitude\Test;
+namespace MYM\Amplitude\Test;
 
 use PHPUnit\Framework\TestCase;
-use \Zumba\Amplitude\Event;
+use \MYM\Amplitude\Event;
 
 /**
  * @group amplitude
@@ -17,11 +17,11 @@ class EventTest extends TestCase
     {
         $event = new Event();
         $result = $event->set($name, $value);
-        $this->assertInstanceOf('\Zumba\Amplitude\Event', $result, 'get should return instance of itself');
+        $this->assertInstanceOf('\MYM\Amplitude\Event', $result, 'get should return instance of itself');
         $this->assertEquals(json_encode($expected), json_encode($event), $msg);
     }
 
-    public function setDataProvider()
+    public function setDataProvider(): array
     {
         return [
             [
@@ -69,11 +69,11 @@ class EventTest extends TestCase
         ];
     }
 
-    public function testSetArray()
+    public function testSetProperties()
     {
         $event = new Event();
 
-        $event->set(
+        $event->setProperties(
             [
                 'deviceId' => 'device',
                 'user_id' => 'user',
@@ -116,7 +116,7 @@ class EventTest extends TestCase
         $this->assertEquals($expected, $event->get($getName), $msg);
     }
 
-    public function getDataProvider()
+    public function getDataProvider(): array
     {
         return [
             [

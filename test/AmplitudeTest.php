@@ -1,10 +1,10 @@
 <?php
 
-namespace Zumba\Amplitude\Test;
+namespace MYM\Amplitude\Test;
 
 use PHPUnit\Framework\TestCase;
-use Zumba\Amplitude\Amplitude;
-use Zumba\Amplitude\Event;
+use MYM\Amplitude\Amplitude;
+use MYM\Amplitude\Event;
 
 /**
  * @group amplitude

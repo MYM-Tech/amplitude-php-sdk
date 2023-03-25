@@ -1,5 +1,5 @@
 <?php
-namespace Zumba\Amplitude;
+namespace MYM\Amplitude;
 
 use Psr\Log;
 
@@ -71,20 +71,6 @@ class Amplitude
     protected bool $optOut = false;
 
     /**
-     * Flag for if should save the last HTTP response for debugging purposes
-     *
-     * @var boolean True to enable saving the last response
-     */
-    protected bool $debugResponse = false;
-
-    /**
-     * Last response from logging event
-     *
-     * @var array|null
-     */
-    protected ?array $lastHttpResponse;
-
-    /**
      * Array of Amplitude instances
      *
      * @var Amplitude[]
@@ -115,7 +101,7 @@ class Amplitude
      *
      * @return self
      */
-    public static function getInstance($instanceName = 'default'): Amplitude
+    public static function getInstance(string $instanceName = 'default'): Amplitude
     {
         if (empty(self::$instances[$instanceName])) {
             self::$instances[$instanceName] = new static();
@@ -174,8 +160,7 @@ class Amplitude
         }
 
 
-        $this->sendQueue();
-        $this->sendQueue();
+       return $this->resetQueue();
 
         return $this->resetEvent();
     }
@@ -205,7 +190,7 @@ class Amplitude
      */
     public function event($event = null): Event
     {
-        if (!empty($event) && $event instanceof \Zumba\Amplitude\Event) {
+        if (!empty($event) && $event instanceof Event) {
             $this->event = $event;
         } elseif (empty($this->event)) {
             // Set the values that persist between tracking events
@@ -213,7 +198,7 @@ class Amplitude
         }
         if (!empty($event) && is_array($event)) {
             // Set properties on the event
-            $this->event->set($event);
+            $this->event->setProperties($event);
         }
         return $this->event;
     }
@@ -246,7 +231,7 @@ class Amplitude
      *
      * @throws \LogicException Throws exception if any if the requirements are not met, such as api key set
      */
-    public function logEvent(string $eventType = '', array $eventProperties = [])
+    public function logEvent(string $eventType = '', array $eventProperties = []): self
     {
         if ($this->optOut) {
             return $this;
@@ -256,7 +241,7 @@ class Amplitude
             throw new \LogicException(static::EXCEPTION_MSG_NO_API_KEY);
         }
         $event = $this->event();
-        $event->set($eventProperties);
+        $event->setProperties($eventProperties);
         $event->eventType = $eventType ?: $event->eventType;
         // Set the persistent options on the event
         $this->setPersistentEventData();
@@ -320,7 +305,7 @@ class Amplitude
             return $this;
         }
         $event = $this->event();
-        $event->set($eventProperties);
+        $event->setProperties($eventProperties);
         $event->eventType = $eventType ?: $event->eventType;
 
         // Sanity checking
@@ -440,7 +425,7 @@ class Amplitude
      */
     public function setOptOut(bool $optOut): self
     {
-        $this->optOut = (bool)$optOut;
+        $this->optOut = $optOut;
 
         return $this;
     }
@@ -503,12 +488,12 @@ class Amplitude
      * Requires $this->event and $this->apiKey to be set, throws an exception otherwise.
      *
      * @return void
-     * @throws \InternalErrorException If event or api key not set
+     * @throws \DomainException If event or api key not set
      */
     protected function sendEvent(): void
     {
         if ('' === $this->event->eventType || '' === $this->apiKey) {
-            throw new \InternalErrorException('Event or api key not set, cannot send event');
+            throw new \DomainException('Event or api key not set, cannot send event');
         }
 
         $this->postData([$this->event]);
@@ -520,12 +505,12 @@ class Amplitude
      * Requires $this->queue and $this->apiKey to be set, otherwise it throws an exception.
      *
      * @return void
-     * @throws \InternalErrorException If event or api key not set
+     * @throws \DomainException If event or api key not set
      */
     protected function sendQueue(): void
     {
         if (0 >= \count($this->queue) || '' === $this->apiKey) {
-            throw new \InternalErrorException('Event or api key not set, cannot send event');
+            throw new \DomainException('Event or api key not set, cannot send event');
         }
 
         $this->postData($this->queue);
@@ -547,10 +532,10 @@ class Amplitude
             'api_key' => $this->apiKey,
             'events' => $events,
         ];
-        curl_setopt($ch, \CURLOPT_POSTFIELDS, json_encode($postFields));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postFields));
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
         // Always return instead of outputting response!
-        curl_setopt($ch, \CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         $curlErrno = curl_errno($ch);
         if ($curlErrno) {
@@ -559,7 +544,7 @@ class Amplitude
                 compact('curlErrno', 'response', 'postFields')
             );
         } else {
-            $httpCode = curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $this->logger->log(
                 $httpCode === 200 ? Log\LogLevel::INFO : Log\LogLevel::ERROR,
                 'Amplitude HTTP API response: ' . $response,

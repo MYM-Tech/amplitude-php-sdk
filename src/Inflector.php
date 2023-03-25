@@ -1,5 +1,5 @@
 <?php
-namespace Zumba\Amplitude;
+namespace MYM\Amplitude;
 
 class Inflector
 {
@@ -8,20 +8,21 @@ class Inflector
      *
      * @var array
      */
-    protected static $cache = array();
+    protected static array $cache = [];
 
     /**
      * Stores and returns values from the cache.
      *
      * @param string $method The name of the method calling the cache
      * @param string $key The original value before conversion
-     * @param string $value The converted value (used to set)
-     * @return string The converted value
+     * @param mixed $value The converted value (used to set)
+     *
+     * @return mixed The converted value
      */
-    protected static function cache($method, $key, $value = null)
+    protected static function cache(string $method, string $key, $value = null)
     {
         if (is_null($value)) {
-            $value = isset(static::$cache[$method][$key]) ? static::$cache[$method][$key] : null;
+            $value = static::$cache[$method][$key] ?? null;
         } else {
             static::$cache[$method][$key] = $value;
         }
@@ -33,15 +34,17 @@ class Inflector
      * Convert someValue to some_value
      *
      * @param string $value A camelCasedString
+     *
      * @return string An underscored_string
      */
-    public static function underscore($value = '')
+    public static function underscore(string $value = ''): string
     {
         $result = static::cache(__FUNCTION__, $value);
         if (!$result) {
             $result = strtolower(preg_replace('/([A-Z])/', '_\1', $value));
             static::cache(__FUNCTION__, $value, $result);
         }
+
         return $result;
     }
 
@@ -49,11 +52,10 @@ class Inflector
      * Convert some_value to someValue
      *
      * @param string $value An underscored_string
-     * @access public
+     *
      * @return string A camelCased string
-     * @static
      */
-    public static function camelCase($value = '')
+    public static function camelCase(string $value = ''): string
     {
         $result = static::cache(__FUNCTION__, $value);
         if (!$result) {
@@ -61,6 +63,7 @@ class Inflector
             $result = str_replace(' ', '', strtolower($newValue[0]) . substr($newValue, 1));
             static::cache(__FUNCTION__, $value, $result);
         }
+
         return $result;
     }
 }
