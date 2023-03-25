@@ -1,4 +1,4 @@
-name: Amplitude PHP CI
+name: Amplitude SDK CI
 
 on:
   push:
@@ -11,26 +11,29 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ['7.2', '7.3', '7.4']
+        php-version: ['7.4', '8.1']
     name: PHP ${{ matrix.php-version }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup PHP with XDebug
-      uses: shivammathur/setup-php@v2
+    - uses: actions/checkout@v3
+    - name: Validate and install dependencies
+      uses: php-actions/composer@v6
       with:
-        php-version: ${{ matrix.php-version }}
-        coverage: xdebug
-    - name: Validate composer.json
-      run: composer validate
-    - name: Install dependencies
-      run: composer install
+          php_version: ${{ matrix.php-version }}
     - name: Run test suite
-      run: vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-    - name: PSR2 coverage
-      run: vendor/bin/phpcs --standard=psr2 src test
-
-    - name: Upload coverage results to Coveralls (only for one result)
-      if: matrix.php-version == '7.2'
+      uses: php-actions/phpunit@v3
+      with:
+          version: 9.6.5
+          php_extensions: xdebug
+          php_version: ${{ matrix.php-version }}
+          bootstrap: vendor/autoload.php
+          configuration: phpunit.xml
+          args: --coverage-clover build/logs/clover.xml
       env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
+          XDEBUG_MODE: coverage
+          TEST_NAME: Scarlett
+    - name: Run code sniffing
+      uses: php-actions/phpcs@v1
+      with:
+          php_version: ${{ matrix.php-version }}
+          path: src
+          standard: psr2
