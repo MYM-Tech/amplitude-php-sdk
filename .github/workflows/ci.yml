@@ -1,4 +1,4 @@
-name: Amplitude PHP CI
+name: Amplitude SDK CI
 
 on:
   push:
